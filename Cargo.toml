@@ -9,5 +9,6 @@ edition = "2018"
 [dependencies]
 dotenv = "0.15"
 rand = "0.8"
-serenity = "0.10"
+serenity = { version = "0.10", features = ["voice"] }
+songbird = "0.1"
 tokio = { version = "1", features = ["macros", "rt", "rt-multi-thread", "signal"] }
