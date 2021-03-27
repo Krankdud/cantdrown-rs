@@ -1,15 +1,21 @@
 use serenity::{
     async_trait,
-    framework::{standard::macros::group, StandardFramework},
+    framework::standard::{
+        help_commands,
+        macros::{group, help},
+        Args, CommandGroup, CommandResult, HelpOptions, StandardFramework,
+    },
     http::Http,
-    model::{event::ResumedEvent, gateway::Ready},
+    model::{channel::Message, event::ResumedEvent, gateway::Ready, id::UserId},
     prelude::*,
 };
+use songbird::SerenityInit;
 use std::collections::HashSet;
 use std::env;
 
 mod commands;
 use commands::meta::*;
+use commands::song::*;
 
 struct Handler;
 
@@ -27,6 +33,24 @@ impl EventHandler for Handler {
 #[group]
 #[commands(drown)]
 struct General;
+
+#[group]
+#[commands(join, leave, play, stop)]
+#[prefix("song")]
+struct Song;
+
+#[help]
+async fn my_help(
+    context: &Context,
+    msg: &Message,
+    args: Args,
+    help_options: &'static HelpOptions,
+    groups: &[&'static CommandGroup],
+    owners: HashSet<UserId>,
+) -> CommandResult {
+    let _ = help_commands::with_embeds(context, msg, args, help_options, groups, owners).await;
+    Ok(())
+}
 
 #[tokio::main]
 async fn main() {
@@ -47,11 +71,14 @@ async fn main() {
 
     let framework = StandardFramework::new()
         .configure(|c| c.owners(owners).prefix("!"))
-        .group(&GENERAL_GROUP);
+        .help(&MY_HELP)
+        .group(&GENERAL_GROUP)
+        .group(&SONG_GROUP);
 
     let mut client = Client::builder(&token)
         .framework(framework)
         .event_handler(Handler)
+        .register_songbird()
         .await
         .expect("Error creating client");
 
