@@ -35,6 +35,7 @@ impl EventHandler for Handler {
 struct General;
 
 #[group]
+#[description("Play music in voice channels\nUse 'join' to have cantdrown join your channel first, then use 'play'")]
 #[commands(join, leave, play, stop)]
 #[prefix("song")]
 struct Song;

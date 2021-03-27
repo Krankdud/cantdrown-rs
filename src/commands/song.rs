@@ -3,6 +3,7 @@ use serenity::model::prelude::*;
 use serenity::prelude::*;
 
 #[command]
+#[description("Tell cantdrown to join your voice channel")]
 #[only_in(guilds)]
 async fn join(ctx: &Context, msg: &Message) -> CommandResult {
     let guild = match msg.guild(&ctx.cache).await {
@@ -38,6 +39,7 @@ async fn join(ctx: &Context, msg: &Message) -> CommandResult {
 }
 
 #[command]
+#[description("Tell cantdrown to get out of your voice channel")]
 #[only_in(guilds)]
 async fn leave(ctx: &Context, msg: &Message) -> CommandResult {
     let guild = match msg.guild(&ctx.cache).await {
@@ -70,6 +72,8 @@ async fn leave(ctx: &Context, msg: &Message) -> CommandResult {
 }
 
 #[command]
+#[description("Play a song in the voice channel")]
+#[usage("<url>")]
 #[only_in(guilds)]
 async fn play(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     let url = match args.single::<String>() {
@@ -121,6 +125,7 @@ async fn play(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
 }
 
 #[command]
+#[description("Stop playing music in the voice channel")]
 #[only_in(guilds)]
 async fn stop(ctx: &Context, msg: &Message) -> CommandResult {
     let guild = match msg.guild(&ctx.cache).await {
