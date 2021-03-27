@@ -15,6 +15,7 @@ use std::env;
 
 mod commands;
 use commands::meta::*;
+use commands::role::*;
 use commands::song::*;
 
 struct Handler;
@@ -39,6 +40,13 @@ struct General;
 #[commands(join, leave, play, stop)]
 #[prefix("song")]
 struct Song;
+
+#[group]
+#[description("Add roles and assign roles to yourself")]
+#[commands(add, assign)]
+#[default_command(assign)]
+#[prefix("role")]
+struct Role;
 
 #[help]
 async fn my_help(
@@ -74,7 +82,8 @@ async fn main() {
         .configure(|c| c.owners(owners).prefix("!"))
         .help(&MY_HELP)
         .group(&GENERAL_GROUP)
-        .group(&SONG_GROUP);
+        .group(&SONG_GROUP)
+        .group(&ROLE_GROUP);
 
     let mut client = Client::builder(&token)
         .framework(framework)
