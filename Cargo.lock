@@ -176,6 +176,7 @@ version = "0.1.0"
 dependencies = [
  "dotenv",
  "http",
+ "lazy_static",
  "rand 0.8.3",
  "regex",
  "serenity",
