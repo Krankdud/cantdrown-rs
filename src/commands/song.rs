@@ -1,6 +1,7 @@
 use serenity::framework::standard::{macros::command, Args, CommandResult};
 use serenity::model::prelude::*;
 use serenity::prelude::*;
+use songbird::input::restartable::Restartable;
 
 #[command]
 #[description("Tell cantdrown to join your voice channel")]
@@ -72,6 +73,7 @@ async fn leave(ctx: &Context, msg: &Message) -> CommandResult {
 }
 
 #[command]
+#[aliases("add", "queue")]
 #[description("Play a song in the voice channel")]
 #[usage("<url>")]
 #[only_in(guilds)]
@@ -103,7 +105,7 @@ async fn play(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     if let Some(handler_lock) = manager.get(guild_id) {
         let mut handler = handler_lock.lock().await;
 
-        let source = match songbird::ytdl(&url).await {
+        let source = match Restartable::ytdl(url, true).await {
             Ok(source) => source,
             Err(why) => {
                 println!("Error starting source: {:?}", why);
@@ -114,11 +116,48 @@ async fn play(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
             }
         };
 
-        handler.play_only_source(source);
+        handler.enqueue_source(source.into());
+
+        let queue_len = handler.queue().len();
+        if queue_len > 1 {
+            msg.channel_id
+                .say(
+                    &ctx.http,
+                    format!("Added song to queue (songs in queue: {})", queue_len),
+                )
+                .await?;
+        }
     } else {
         msg.channel_id
             .say(&ctx.http, "Not in a voice channel to play in")
             .await?;
+    }
+
+    Ok(())
+}
+
+#[command]
+#[description("Skip the current song in the queue")]
+#[only_in(guilds)]
+async fn skip(ctx: &Context, msg: &Message) -> CommandResult {
+    let guild = match msg.guild(&ctx.cache).await {
+        Some(guild) => guild,
+        None => {
+            println!("Could not get guild");
+            return Ok(());
+        }
+    };
+    let guild_id = guild.id;
+
+    let manager = songbird::get(ctx)
+        .await
+        .expect("Couldn't get Songbird voice client")
+        .clone();
+
+    if let Some(handler_lock) = manager.get(guild_id) {
+        let handler = handler_lock.lock().await;
+        let queue = handler.queue();
+        let _ = queue.skip();
     }
 
     Ok(())
@@ -143,8 +182,9 @@ async fn stop(ctx: &Context, msg: &Message) -> CommandResult {
         .clone();
 
     if let Some(handler_lock) = manager.get(guild_id) {
-        let mut handler = handler_lock.lock().await;
-        handler.stop();
+        let handler = handler_lock.lock().await;
+        let queue = handler.queue();
+        queue.stop();
     }
 
     Ok(())
