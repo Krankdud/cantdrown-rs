@@ -14,6 +14,7 @@ use std::collections::HashSet;
 use std::env;
 
 mod commands;
+use commands::doom::*;
 use commands::meta::*;
 use commands::role::*;
 use commands::song::*;
@@ -32,7 +33,7 @@ impl EventHandler for Handler {
 }
 
 #[group]
-#[commands(drown)]
+#[commands(drown, host)]
 struct General;
 
 #[group]
