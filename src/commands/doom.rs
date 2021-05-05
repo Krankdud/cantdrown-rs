@@ -1,10 +1,13 @@
 use anyhow::Context;
 use bytes::Buf;
+use glob::glob;
 use serenity::client::Context as SerenityContext;
 use serenity::framework::standard::{macros::command, Args, CommandResult};
 use serenity::model::prelude::*;
 use std::fs::File;
 use std::io::copy;
+use std::path::{Path, PathBuf};
+use std::process::Command;
 use url::Url;
 
 #[command]
@@ -38,8 +41,8 @@ async fn host(ctx: &SerenityContext, msg: &Message, mut args: Args) -> CommandRe
         }
 
         if let Some(url) = download_url {
-            match download_zip(&url).await {
-                Ok(_) => {}
+            let path = match download_zip(&url).await {
+                Ok(path) => path,
                 Err(e) => {
                     // TODO: Log error
                     msg.channel_id
@@ -48,29 +51,37 @@ async fn host(ctx: &SerenityContext, msg: &Message, mut args: Args) -> CommandRe
                     return Ok(());
                 }
             };
+
+            let search = format!("{}/**/*.wad", path.to_str().unwrap());
+            let _command = Command::new("f:/games/doom/dsdadoom/dsda-doom.exe")
+                .arg("-iwad")
+                .arg("f:/games/doom/iwads/doom2.wad")
+                .arg("-file")
+                .args(glob(&search)?.filter_map(Result::ok))
+                .spawn()?;
         }
     }
 
     Ok(())
 }
 
-async fn download_zip(url: &str) -> anyhow::Result<()> {
+async fn download_zip(url: &str) -> anyhow::Result<PathBuf> {
     let res = reqwest::get(url)
         .await
         .context("Could not download zip file")?;
 
-    println!("Status: {}", res.status());
-
     let mut tmpfile: File = tempfile::tempfile()?;
     let content = res.bytes().await?;
+    let hash = blake3::Hasher::new().update(&content).finalize();
     copy(&mut content.reader(), &mut tmpfile)?;
 
-    let zip = zip::ZipArchive::new(tmpfile)?;
-    for name in zip.file_names() {
-        println!("{}", name);
-    }
+    let mut zip = zip::ZipArchive::new(tmpfile)?;
 
-    Ok(())
+    let path = format!("./tmp/{}", hash.to_hex());
+    let path = Path::new(&path);
+    zip.extract(path)?;
+
+    Ok(path.to_path_buf())
 }
 
 fn get_idgames_download_url(url: &str) -> Option<String> {
