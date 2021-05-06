@@ -1,9 +1,10 @@
+use home::home_dir;
 use serde::Deserialize;
 use serenity::client::{ClientBuilder, Context};
 use serenity::prelude::TypeMapKey;
-use std::fs::File;
 use std::io::Read;
 use std::path::Path;
+use std::{fs::File, path::PathBuf};
 
 pub struct DoomConfigKey;
 
@@ -34,7 +35,7 @@ pub struct IWads {
 }
 
 pub fn register(client_builder: ClientBuilder) -> ClientBuilder {
-    let path = Path::new("./config/doom.toml");
+    let path = get_config_path();
     let mut file = File::open(&path).expect("Could not open doom config");
 
     let mut buffer = String::new();
@@ -51,6 +52,18 @@ pub async fn get(context: &Context) -> DoomConfig {
         .get::<DoomConfigKey>()
         .expect("Doom config is not in TypeMap");
     config.clone()
+}
+
+fn get_config_path() -> PathBuf {
+    if let Ok(dir) = std::env::var("CANTDROWN_CONFIG_DIR") {
+        let mut path = PathBuf::from(dir);
+        path.push("doom.toml");
+        path
+    } else {
+        let mut path = home_dir().expect("Could not find home directory");
+        path.push(".config/cantdrown/doom.toml");
+        path
+    }
 }
 
 pub trait DoomConfigInit {

@@ -67,7 +67,7 @@ async fn my_help(
 
 #[tokio::main]
 async fn main() {
-    dotenv::dotenv().expect("Failed to load .env file");
+    dotenv::dotenv().ok();
 
     let token = env::var("DISCORD_TOKEN").expect("Expected a token in the environment");
 
