@@ -4,10 +4,10 @@ use glob::glob;
 use serenity::client::Context as SerenityContext;
 use serenity::framework::standard::{macros::command, Args, CommandResult};
 use serenity::model::prelude::*;
-use std::fs::File;
-use std::io::copy;
 use std::path::{Path, PathBuf};
 use std::process::Command;
+use std::{ffi::OsStr, fs::File};
+use std::{io::copy, time::Duration};
 use url::Url;
 
 #[command]
@@ -29,11 +29,23 @@ async fn host(ctx: &SerenityContext, msg: &Message, mut args: Args) -> CommandRe
         }
     };
 
+    let config = crate::config::doom::get(&ctx).await;
+    let iwad = match iwad.as_str() {
+        "doom" => config.iwads.doom,
+        "doom2" => config.iwads.doom2,
+        "tnt" => config.iwads.tnt,
+        "plutonia" => config.iwads.plutonia,
+        _ => {
+            msg.channel_id.say(&ctx.http, "Invalid IWAD").await?;
+            return Ok(());
+        }
+    };
+
     if let Some(url) = url {
         let mut download_url = Some(String::from(&url));
 
         if url.contains("doomworld.com/idgames") {
-            download_url = get_idgames_download_url(&url);
+            download_url = get_idgames_download_url(&url, &config.idgames_mirror);
         } else if url.contains("dropbox.com") {
             download_url = get_dropbox_download_url(&url);
         } else if url.contains("drive.google.com") {
@@ -43,7 +55,7 @@ async fn host(ctx: &SerenityContext, msg: &Message, mut args: Args) -> CommandRe
         if let Some(url) = download_url {
             let path = match download_zip(&url).await {
                 Ok(path) => path,
-                Err(e) => {
+                Err(_e) => {
                     // TODO: Log error
                     msg.channel_id
                         .say(&ctx.http, "Could not download the wad")
@@ -53,12 +65,34 @@ async fn host(ctx: &SerenityContext, msg: &Message, mut args: Args) -> CommandRe
             };
 
             let search = format!("{}/**/*.wad", path.to_str().unwrap());
-            let _command = Command::new("f:/games/doom/dsdadoom/dsda-doom.exe")
+            let first_wad = glob(&search)?.filter_map(Result::ok).next();
+            let mut server_name = String::from(config.base_name);
+            if let Some(first_wad) = first_wad {
+                let name = first_wad.file_name().unwrap_or(OsStr::new("unknown"));
+                server_name.push_str(&format!(" ({})", name.to_str().unwrap_or("unknown")));
+            }
+
+            let mut child = Command::new(config.executable)
+                .arg("-host")
                 .arg("-iwad")
-                .arg("f:/games/doom/iwads/doom2.wad")
+                .arg(iwad)
                 .arg("-file")
                 .args(glob(&search)?.filter_map(Result::ok))
+                .args(config.arguments.split_whitespace())
+                .arg("+sv_hostname")
+                .arg(&server_name)
                 .spawn()?;
+
+            msg.channel_id
+                .say(
+                    &ctx.http,
+                    format!("Created Zandronum server \"{}\", have fun!", &server_name),
+                )
+                .await?;
+
+            tokio::time::sleep(Duration::from_secs(config.timeout)).await;
+
+            let _ = child.kill();
         }
     }
 
@@ -84,13 +118,12 @@ async fn download_zip(url: &str) -> anyhow::Result<PathBuf> {
     Ok(path.to_path_buf())
 }
 
-fn get_idgames_download_url(url: &str) -> Option<String> {
+fn get_idgames_download_url(url: &str, mirror: &str) -> Option<String> {
     if let Some(index) = url.find("doomworld.com/idgames") {
         let index = index + "doomworld.com/idgames".len();
         let level = &url[index..];
 
-        // TODO: Make mirror configurable
-        let mut url = String::from("http://www.gamers.org/pub/idgames");
+        let mut url = String::from(mirror);
         url.push_str(level);
         url.push_str(".zip");
 

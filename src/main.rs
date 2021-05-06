@@ -19,6 +19,9 @@ use commands::meta::*;
 use commands::role::*;
 use commands::song::*;
 
+mod config;
+use config::doom::DoomConfigInit;
+
 struct Handler;
 
 #[async_trait]
@@ -90,6 +93,7 @@ async fn main() {
         .framework(framework)
         .event_handler(Handler)
         .register_songbird()
+        .register_doom()
         .await
         .expect("Error creating client");
 
