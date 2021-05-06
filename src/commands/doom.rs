@@ -1,13 +1,19 @@
 use anyhow::Context;
 use bytes::Buf;
 use glob::glob;
-use serenity::client::Context as SerenityContext;
-use serenity::framework::standard::{macros::command, Args, CommandResult};
-use serenity::model::prelude::*;
-use std::path::{Path, PathBuf};
-use std::process::Command;
-use std::{ffi::OsStr, fs::File};
-use std::{io::copy, time::Duration};
+use serenity::{
+    client::Context as SerenityContext,
+    framework::standard::{macros::command, Args, CommandResult},
+    model::prelude::*,
+};
+use std::{
+    ffi::OsStr,
+    fs::File,
+    io::copy,
+    path::{Path, PathBuf},
+    process::Command,
+    time::Duration,
+};
 use url::Url;
 
 #[command]

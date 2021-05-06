@@ -1,8 +1,9 @@
-use rand::seq::SliceRandom;
-use rand::thread_rng;
-use serenity::framework::standard::{macros::command, CommandResult};
-use serenity::model::prelude::*;
-use serenity::prelude::*;
+use rand::{seq::SliceRandom, thread_rng};
+use serenity::{
+    framework::standard::{macros::command, CommandResult},
+    model::prelude::*,
+    prelude::*,
+};
 
 #[command]
 async fn drown(ctx: &Context, msg: &Message) -> CommandResult {

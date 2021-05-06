@@ -10,14 +10,10 @@ use serenity::{
     prelude::*,
 };
 use songbird::SerenityInit;
-use std::collections::HashSet;
-use std::env;
+use std::{collections::HashSet, env};
 
 mod commands;
-use commands::doom::*;
-use commands::meta::*;
-use commands::role::*;
-use commands::song::*;
+use commands::{doom::*, meta::*, role::*, song::*};
 
 mod config;
 use config::doom::DoomConfigInit;

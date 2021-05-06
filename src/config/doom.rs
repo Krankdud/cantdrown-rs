@@ -1,10 +1,10 @@
 use home::home_dir;
 use serde::Deserialize;
-use serenity::client::{ClientBuilder, Context};
-use serenity::prelude::TypeMapKey;
-use std::io::Read;
-use std::path::Path;
-use std::{fs::File, path::PathBuf};
+use serenity::{
+    client::{ClientBuilder, Context},
+    prelude::TypeMapKey,
+};
+use std::{fs::File, io::Read, path::PathBuf};
 
 pub struct DoomConfigKey;
 
