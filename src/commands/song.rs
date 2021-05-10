@@ -191,3 +191,45 @@ async fn stop(ctx: &Context, msg: &Message) -> CommandResult {
 
     Ok(())
 }
+
+#[command]
+#[description("Get the URL for the current song")]
+#[only_in(guilds)]
+async fn current(ctx: &Context, msg: &Message) -> CommandResult {
+    let guild = match msg.guild(&ctx.cache).await {
+        Some(guild) => guild,
+        None => {
+            println!("Could not get guild");
+            return Ok(());
+        }
+    };
+    let guild_id = guild.id;
+
+    let manager = songbird::get(ctx)
+        .await
+        .expect("Couldn't get Songbird voice client")
+        .clone();
+
+    if let Some(handler_lock) = manager.get(guild_id) {
+        let handler = handler_lock.lock().await;
+        let queue = handler.queue();
+
+        if queue.is_empty() {
+            msg.channel_id
+                .say(&ctx.http, "There are no songs in the queue")
+                .await?;
+        } else {
+            if let Some(track) = queue.current() {
+                if let Some(url) = &track.metadata().source_url {
+                    msg.channel_id.say(&ctx.http, format!("{}", url)).await?;
+                } else {
+                    msg.channel_id
+                        .say(&ctx.http, "I have no idea what I'm playing right now!")
+                        .await?;
+                }
+            }
+        }
+    }
+
+    Ok(())
+}

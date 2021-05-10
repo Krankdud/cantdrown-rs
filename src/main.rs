@@ -37,7 +37,8 @@ struct General;
 
 #[group]
 #[description("Play music in voice channels\nUse 'join' to have cantdrown join your channel first, then use 'play'")]
-#[commands(join, leave, play, skip, stop)]
+#[commands(join, leave, play, skip, stop, current)]
+#[default_command(current)]
 #[prefix("song")]
 struct Song;
 
