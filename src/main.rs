@@ -12,6 +12,7 @@ use serenity::{
 use songbird::SerenityInit;
 use std::{collections::HashSet, env};
 
+mod audio;
 mod commands;
 use commands::{doom::*, meta::*, role::*, song::*};
 

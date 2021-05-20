@@ -208,6 +208,7 @@ name = "cantdrown"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "async-trait",
  "blake3",
  "bytes 1.0.1",
  "dotenv",
@@ -218,6 +219,7 @@ dependencies = [
  "regex",
  "reqwest",
  "serde",
+ "serde_json",
  "serenity",
  "songbird",
  "tempfile",

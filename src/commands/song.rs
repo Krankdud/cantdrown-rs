@@ -1,9 +1,9 @@
+use crate::audio::restartable_ytdl_normalized;
 use serenity::{
     framework::standard::{macros::command, Args, CommandResult},
     model::prelude::*,
     prelude::*,
 };
-use songbird::input::restartable::Restartable;
 
 #[command]
 #[description("Tell cantdrown to join your voice channel")]
@@ -107,7 +107,7 @@ async fn play(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     if let Some(handler_lock) = manager.get(guild_id) {
         let mut handler = handler_lock.lock().await;
 
-        let source = match Restartable::ytdl(url, true).await {
+        let source = match restartable_ytdl_normalized(url, true).await {
             Ok(source) => source,
             Err(why) => {
                 println!("Error starting source: {:?}", why);
