@@ -1,4 +1,4 @@
-use crate::audio::restartable_ytdl_normalized;
+use crate::audio::{normalize::restartable_ytdl_normalized, playlist::get_playlist_videos};
 use serenity::{
     framework::standard::{macros::command, Args, CommandResult},
     model::prelude::*,
@@ -90,11 +90,36 @@ async fn play(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
         }
     };
 
+    let mut queue_len: usize = 0;
+    if url.contains("youtube.com/playlist") {
+        let videos = get_playlist_videos(&url).await?;
+        for url in videos {
+            if let Some(url) = url {
+                queue_len = queue_song(ctx, msg, url).await?;
+            }
+        }
+    } else {
+        queue_len = queue_song(ctx, msg, url).await?;
+    }
+
+    if queue_len > 1 {
+        msg.channel_id
+            .say(
+                &ctx.http,
+                format!("Added song to queue (songs in queue: {})", queue_len),
+            )
+            .await?;
+    }
+
+    Ok(())
+}
+
+async fn queue_song(ctx: &Context, msg: &Message, url: String) -> anyhow::Result<usize> {
     let guild = match msg.guild(&ctx.cache).await {
         Some(guild) => guild,
         None => {
             println!("Could not get guild");
-            return Ok(());
+            return Ok(0);
         }
     };
     let guild_id = guild.id;
@@ -114,28 +139,20 @@ async fn play(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
                 msg.channel_id
                     .say(&ctx.http, "Error sourcing ffmpeg")
                     .await?;
-                return Ok(());
+                return Ok(0);
             }
         };
 
         handler.enqueue_source(source.into());
 
         let queue_len = handler.queue().len();
-        if queue_len > 1 {
-            msg.channel_id
-                .say(
-                    &ctx.http,
-                    format!("Added song to queue (songs in queue: {})", queue_len),
-                )
-                .await?;
-        }
+        Ok(queue_len)
     } else {
         msg.channel_id
             .say(&ctx.http, "Not in a voice channel to play in")
             .await?;
+        Ok(0)
     }
-
-    Ok(())
 }
 
 #[command]
