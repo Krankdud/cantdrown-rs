@@ -5,7 +5,7 @@ use serenity::{
 };
 
 #[command]
-#[description("Add a role.\nIf you want to ")]
+#[description("Add a role.")]
 #[aliases("create")]
 #[usage("<role name>")]
 #[only_in(guilds)]
@@ -23,7 +23,7 @@ async fn add(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     let guild = match msg.guild(&ctx.cache).await {
         Some(guild) => guild,
         None => {
-            println!("Could not get guild");
+            log::error!("Could not get guild");
             return Ok(());
         }
     };
@@ -65,7 +65,7 @@ async fn assign(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     let guild = match msg.guild(&ctx.cache).await {
         Some(guild) => guild,
         None => {
-            println!("Could not get guild");
+            log::error!("Could not get guild");
             return Ok(());
         }
     };
@@ -77,7 +77,7 @@ async fn assign(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
                 msg.channel_id
                     .say(&ctx.http, "Error finding user's roles")
                     .await?;
-                println!("Couldn't get user's roles: {:?}", why);
+                log::error!("Couldn't get user's roles: {:?}", why);
                 return Ok(());
             }
         };

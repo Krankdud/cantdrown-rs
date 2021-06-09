@@ -15,7 +15,7 @@ async fn join(ctx: &Context, msg: &Message) -> CommandResult {
     let guild = match msg.guild(&ctx.cache).await {
         Some(guild) => guild,
         None => {
-            println!("Could not get guild");
+            log::error!("Could not get guild");
             return Ok(());
         }
     };
@@ -51,7 +51,7 @@ async fn leave(ctx: &Context, msg: &Message) -> CommandResult {
     let guild = match msg.guild(&ctx.cache).await {
         Some(guild) => guild,
         None => {
-            println!("Could not get guild");
+            log::error!("Could not get guild");
             return Ok(());
         }
     };
@@ -121,7 +121,7 @@ async fn queue_song(ctx: &Context, msg: &Message, url: String) -> anyhow::Result
     let guild = match msg.guild(&ctx.cache).await {
         Some(guild) => guild,
         None => {
-            println!("Could not get guild");
+            log::error!("Could not get guild");
             return Ok(0);
         }
     };
@@ -146,7 +146,7 @@ async fn queue_song(ctx: &Context, msg: &Message, url: String) -> anyhow::Result
         let source = match restartable_ytdl_normalized(url, true).await {
             Ok(source) => source,
             Err(why) => {
-                println!("Error starting source: {:?}", why);
+                log::error!("Error starting source: {:?}", why);
                 msg.channel_id.say(&ctx.http, "Couldn't queue song").await?;
                 return Ok(0);
             }
@@ -171,7 +171,7 @@ async fn skip(ctx: &Context, msg: &Message) -> CommandResult {
     let guild = match msg.guild(&ctx.cache).await {
         Some(guild) => guild,
         None => {
-            println!("Could not get guild");
+            log::error!("Could not get guild");
             return Ok(());
         }
     };
@@ -198,7 +198,7 @@ async fn stop(ctx: &Context, msg: &Message) -> CommandResult {
     let guild = match msg.guild(&ctx.cache).await {
         Some(guild) => guild,
         None => {
-            println!("Could not get guild");
+            log::error!("Could not get guild");
             return Ok(());
         }
     };
@@ -225,7 +225,7 @@ async fn current(ctx: &Context, msg: &Message) -> CommandResult {
     let guild = match msg.guild(&ctx.cache).await {
         Some(guild) => guild,
         None => {
-            println!("Could not get guild");
+            log::error!("Could not get guild");
             return Ok(());
         }
     };

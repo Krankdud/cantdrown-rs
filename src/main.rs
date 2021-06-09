@@ -1,3 +1,4 @@
+use flexi_logger::{Duplicate, Logger};
 use serenity::{
     async_trait,
     framework::standard::{
@@ -26,11 +27,11 @@ struct Handler;
 #[async_trait]
 impl EventHandler for Handler {
     async fn ready(&self, _: Context, ready: Ready) {
-        println!("Connected as {}", ready.user.name);
+        log::info!("Connected as {}", ready.user.name);
     }
 
     async fn resume(&self, _: Context, _: ResumedEvent) {
-        println!("Resumed");
+        log::info!("Resumed");
     }
 }
 
@@ -69,6 +70,13 @@ async fn my_help(
 async fn main() {
     dotenv::dotenv().ok();
 
+    Logger::with_env_or_str("info")
+        .log_to_file()
+        .directory("logs")
+        .duplicate_to_stderr(Duplicate::Warn)
+        .start()
+        .expect("Failed to initialize logger");
+
     let token = env::var("DISCORD_TOKEN").expect("Expected a token in the environment");
 
     let http = Http::new_with_token(&token);
@@ -99,6 +107,6 @@ async fn main() {
         .expect("Error creating client");
 
     if let Err(why) = client.start().await {
-        println!("Client error: {:?}", why);
+        log::error!("Client error: {:?}", why);
     }
 }
