@@ -70,9 +70,10 @@ async fn my_help(
 async fn main() {
     dotenv::dotenv().ok();
 
+    let log_path = env::var("CANTDROWN_LOG_DIR").unwrap_or(String::from("logs"));
     Logger::with_env_or_str("info")
         .log_to_file()
-        .directory("logs")
+        .directory(log_path)
         .duplicate_to_stderr(Duplicate::Warn)
         .start()
         .expect("Failed to initialize logger");

@@ -1,4 +1,5 @@
 /target
 /config
 /tmp
+/logs
 .env
