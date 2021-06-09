@@ -1,9 +1,12 @@
 use crate::audio::{normalize::restartable_ytdl_normalized, playlist::get_playlist_videos};
+use crate::util::get_ytdl_limiter;
+use ratelimit_meter::NonConformance;
 use serenity::{
     framework::standard::{macros::command, Args, CommandResult},
     model::prelude::*,
     prelude::*,
 };
+use tokio::time;
 
 #[command]
 #[description("Tell cantdrown to join your voice channel")]
@@ -129,6 +132,14 @@ async fn queue_song(ctx: &Context, msg: &Message, url: String) -> anyhow::Result
         .expect("Couldn't get Songbird voice client")
         .clone();
 
+    let mut limiter = get_ytdl_limiter(&ctx).await;
+    let mut res = limiter.check();
+    while let Err(negative) = res {
+        let sleep_time = negative.wait_time_from(std::time::Instant::now());
+        time::sleep(sleep_time).await;
+        res = limiter.check();
+    }
+
     if let Some(handler_lock) = manager.get(guild_id) {
         let mut handler = handler_lock.lock().await;
 
@@ -136,9 +147,7 @@ async fn queue_song(ctx: &Context, msg: &Message, url: String) -> anyhow::Result
             Ok(source) => source,
             Err(why) => {
                 println!("Error starting source: {:?}", why);
-                msg.channel_id
-                    .say(&ctx.http, "Error sourcing ffmpeg")
-                    .await?;
+                msg.channel_id.say(&ctx.http, "Couldn't queue song").await?;
                 return Ok(0);
             }
         };

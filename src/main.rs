@@ -14,10 +14,12 @@ use std::{collections::HashSet, env};
 
 mod audio;
 mod commands;
-use commands::{doom::*, meta::*, role::*, song::*};
-
 mod config;
+mod util;
+
+use commands::{doom::*, meta::*, role::*, song::*};
 use config::doom::DoomConfigInit;
+use util::RateLimiterInit;
 
 struct Handler;
 
@@ -92,6 +94,7 @@ async fn main() {
         .event_handler(Handler)
         .register_songbird()
         .register_doom()
+        .register_ratelimiters()
         .await
         .expect("Error creating client");
 
