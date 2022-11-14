@@ -29,7 +29,7 @@ pub trait RateLimiterInit {
     fn register_ratelimiters(self) -> Self;
 }
 
-impl RateLimiterInit for ClientBuilder<'_> {
+impl RateLimiterInit for ClientBuilder {
     fn register_ratelimiters(self) -> Self {
         register(self)
     }

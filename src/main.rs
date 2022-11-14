@@ -6,7 +6,6 @@ use serenity::{
         macros::{group, help},
         Args, CommandGroup, CommandResult, HelpOptions, StandardFramework,
     },
-    http::Http,
     model::{channel::Message, event::ResumedEvent, gateway::Ready, id::UserId},
     prelude::*,
 };
@@ -79,26 +78,16 @@ async fn main() {
         .expect("Failed to initialize logger");
 
     let token = env::var("DISCORD_TOKEN").expect("Expected a token in the environment");
-
-    let http = Http::new_with_token(&token);
-    let (owners, _bot_id) = match http.get_current_application_info().await {
-        Ok(info) => {
-            let mut owners = HashSet::new();
-            owners.insert(info.owner.id);
-
-            (owners, info.id)
-        }
-        Err(why) => panic!("Could not access application info: {:?}", why),
-    };
+    let intents = GatewayIntents::non_privileged() | GatewayIntents::MESSAGE_CONTENT;
 
     let framework = StandardFramework::new()
-        .configure(|c| c.owners(owners).prefix("!"))
+        .configure(|c| c.prefix("!"))
         .help(&MY_HELP)
         .group(&GENERAL_GROUP)
         .group(&SONG_GROUP)
         .group(&ROLE_GROUP);
 
-    let mut client = Client::builder(&token)
+    let mut client = Client::builder(&token, intents)
         .framework(framework)
         .event_handler(Handler)
         .register_songbird()

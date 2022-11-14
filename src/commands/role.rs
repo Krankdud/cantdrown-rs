@@ -20,7 +20,7 @@ async fn add(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
         }
     };
 
-    let guild = match msg.guild(&ctx.cache).await {
+    let guild = match msg.guild(&ctx.cache) {
         Some(guild) => guild,
         None => {
             log::error!("Could not get guild");
@@ -62,7 +62,7 @@ async fn assign(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
         }
     };
 
-    let guild = match msg.guild(&ctx.cache).await {
+    let guild = match msg.guild(&ctx.cache) {
         Some(guild) => guild,
         None => {
             log::error!("Could not get guild");

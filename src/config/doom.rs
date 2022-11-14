@@ -70,7 +70,7 @@ pub trait DoomConfigInit {
     fn register_doom(self) -> Self;
 }
 
-impl DoomConfigInit for ClientBuilder<'_> {
+impl DoomConfigInit for ClientBuilder {
     fn register_doom(self) -> Self {
         register(self)
     }
