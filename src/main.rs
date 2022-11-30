@@ -1,4 +1,4 @@
-use flexi_logger::{Duplicate, Logger};
+use flexi_logger::{Duplicate, FileSpec, Logger};
 use serenity::{
     async_trait,
     framework::standard::{
@@ -70,9 +70,9 @@ async fn main() {
     dotenv::dotenv().ok();
 
     let log_path = env::var("CANTDROWN_LOG_DIR").unwrap_or(String::from("logs"));
-    Logger::with_env_or_str("info")
-        .log_to_file()
-        .directory(log_path)
+    Logger::try_with_env_or_str("info")
+        .expect("Failed to initialize logger")
+        .log_to_file(FileSpec::default().directory(log_path))
         .duplicate_to_stderr(Duplicate::Warn)
         .start()
         .expect("Failed to initialize logger");
