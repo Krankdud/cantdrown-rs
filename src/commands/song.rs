@@ -6,6 +6,7 @@ use serenity::{
     model::prelude::*,
     prelude::*,
 };
+use songbird::input::restartable::Restartable;
 use tokio::time;
 
 #[command]
@@ -143,7 +144,7 @@ async fn queue_song(ctx: &Context, msg: &Message, url: String) -> anyhow::Result
     if let Some(handler_lock) = manager.get(guild_id) {
         let mut handler = handler_lock.lock().await;
 
-        let source = match restartable_ytdl_normalized(url, true).await {
+        let source = match Restartable::ytdl(url, true).await {
             Ok(source) => source,
             Err(why) => {
                 log::error!("Error starting source: {:?}", why);
