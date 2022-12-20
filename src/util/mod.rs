@@ -1,3 +1,4 @@
+use lavalink_rs::LavalinkClient;
 use nonzero_ext::nonzero;
 use ratelimit_meter::{DirectRateLimiter, GCRA};
 use serenity::{
@@ -10,6 +11,12 @@ pub struct YtdlRateLimitKey;
 
 impl TypeMapKey for YtdlRateLimitKey {
     type Value = DirectRateLimiter<GCRA<std::time::Instant>>;
+}
+
+pub struct LavalinkKey;
+
+impl TypeMapKey for LavalinkKey {
+    type Value = LavalinkClient;
 }
 
 pub fn register(client_builder: ClientBuilder) -> ClientBuilder {
