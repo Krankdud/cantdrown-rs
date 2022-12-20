@@ -10,7 +10,7 @@ use serenity::{
 #[description("Tell cantdrown to join your voice channel")]
 #[only_in(guilds)]
 async fn join(ctx: &Context, msg: &Message) -> CommandResult {
-    let guild = match msg.guild(&ctx.cache).await {
+    let guild = match msg.guild(&ctx.cache) {
         Some(guild) => guild,
         None => {
             log::error!("Could not get guild");
@@ -61,7 +61,7 @@ async fn join(ctx: &Context, msg: &Message) -> CommandResult {
 #[description("Tell cantdrown to get out of your voice channel")]
 #[only_in(guilds)]
 async fn leave(ctx: &Context, msg: &Message) -> CommandResult {
-    let guild = match msg.guild(&ctx.cache).await {
+    let guild = match msg.guild(&ctx.cache) {
         Some(guild) => guild,
         None => {
             log::error!("Could not get guild");
@@ -172,7 +172,7 @@ async fn play(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
 #[description("Skip the current song in the queue")]
 #[only_in(guilds)]
 async fn skip(ctx: &Context, msg: &Message) -> CommandResult {
-    let guild = match msg.guild(&ctx.cache).await {
+    let guild = match msg.guild(&ctx.cache) {
         Some(guild) => guild,
         None => {
             log::error!("Could not get guild");
@@ -200,7 +200,7 @@ async fn skip(ctx: &Context, msg: &Message) -> CommandResult {
 #[description("Stop playing music in the voice channel")]
 #[only_in(guilds)]
 async fn stop(ctx: &Context, msg: &Message) -> CommandResult {
-    let guild = match msg.guild(&ctx.cache).await {
+    let guild = match msg.guild(&ctx.cache) {
         Some(guild) => guild,
         None => {
             log::error!("Could not get guild");
@@ -221,7 +221,7 @@ async fn stop(ctx: &Context, msg: &Message) -> CommandResult {
 #[description("Get the URL for the current song")]
 #[only_in(guilds)]
 async fn current(ctx: &Context, msg: &Message) -> CommandResult {
-    let guild = match msg.guild(&ctx.cache).await {
+    let guild = match msg.guild(&ctx.cache) {
         Some(guild) => guild,
         None => {
             log::error!("Could not get guild");

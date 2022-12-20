@@ -7,7 +7,6 @@ use serenity::{
         macros::{group, help},
         Args, CommandGroup, CommandResult, HelpOptions, StandardFramework,
     },
-    http::Http,
     model::{channel::Message, event::ResumedEvent, gateway::Ready, id::UserId},
     prelude::*,
 };
@@ -83,9 +82,9 @@ async fn main() {
     dotenv::dotenv().ok();
 
     let log_path = env::var("CANTDROWN_LOG_DIR").unwrap_or(String::from("logs"));
-    Logger::with_env_or_str("info")
-        .log_to_file()
-        .directory(log_path)
+    Logger::try_with_env_or_str("info")
+        .expect("Failed to initialize logger")
+        .log_to_file(FileSpec::default().directory(log_path))
         .duplicate_to_stderr(Duplicate::Warn)
         .start()
         .expect("Failed to initialize logger");
@@ -104,13 +103,13 @@ async fn main() {
     };
 
     let framework = StandardFramework::new()
-        .configure(|c| c.owners(owners).prefix("!"))
+        .configure(|c| c.prefix("!"))
         .help(&MY_HELP)
         .group(&GENERAL_GROUP)
         .group(&SONG_GROUP)
         .group(&ROLE_GROUP);
 
-    let mut client = Client::builder(&token)
+    let mut client = Client::builder(&token, intents)
         .framework(framework)
         .event_handler(Handler)
         .register_songbird()
