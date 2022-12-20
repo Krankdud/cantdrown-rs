@@ -1,13 +1,10 @@
-use crate::audio::{normalize::restartable_ytdl_normalized, playlist::get_playlist_videos};
-use crate::util::{get_ytdl_limiter, LavalinkKey};
+use crate::util::LavalinkKey;
 use lavalink_rs::LavalinkClient;
-use ratelimit_meter::NonConformance;
 use serenity::{
     framework::standard::{macros::command, Args, CommandResult},
     model::prelude::*,
     prelude::*,
 };
-use tokio::time;
 
 #[command]
 #[description("Tell cantdrown to join your voice channel")]
@@ -168,77 +165,7 @@ async fn play(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
         }
     }
 
-    /*
-    let mut queue_len: usize = 0;
-    if url.contains("youtube.com/playlist") {
-        let videos = get_playlist_videos(&url).await?;
-        for url in videos {
-            if let Some(url) = url {
-                queue_len = queue_song(ctx, msg, url).await?;
-            }
-        }
-    } else {
-        queue_len = queue_song(ctx, msg, url).await?;
-    }
-
-    if queue_len > 1 {
-        msg.channel_id
-            .say(
-                &ctx.http,
-                format!("Added song to queue (songs in queue: {})", queue_len),
-            )
-            .await?;
-    }
-    */
-
     Ok(())
-}
-
-async fn queue_song(ctx: &Context, msg: &Message, url: String) -> anyhow::Result<usize> {
-    let guild = match msg.guild(&ctx.cache).await {
-        Some(guild) => guild,
-        None => {
-            log::error!("Could not get guild");
-            return Ok(0);
-        }
-    };
-    let guild_id = guild.id;
-
-    let manager = songbird::get(ctx)
-        .await
-        .expect("Couldn't get Songbird voice client")
-        .clone();
-
-    let mut limiter = get_ytdl_limiter(&ctx).await;
-    let mut res = limiter.check();
-    while let Err(negative) = res {
-        let sleep_time = negative.wait_time_from(std::time::Instant::now());
-        time::sleep(sleep_time).await;
-        res = limiter.check();
-    }
-
-    if let Some(handler_lock) = manager.get(guild_id) {
-        let mut handler = handler_lock.lock().await;
-
-        let source = match restartable_ytdl_normalized(url, true).await {
-            Ok(source) => source,
-            Err(why) => {
-                log::error!("Error starting source: {:?}", why);
-                msg.channel_id.say(&ctx.http, "Couldn't queue song").await?;
-                return Ok(0);
-            }
-        };
-
-        handler.enqueue_source(source.into());
-
-        let queue_len = handler.queue().len();
-        Ok(queue_len)
-    } else {
-        msg.channel_id
-            .say(&ctx.http, "Not in a voice channel to play in")
-            .await?;
-        Ok(0)
-    }
 }
 
 #[command]

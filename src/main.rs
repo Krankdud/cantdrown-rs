@@ -14,14 +14,13 @@ use serenity::{
 use songbird::SerenityInit;
 use std::{collections::HashSet, env};
 
-mod audio;
 mod commands;
 mod config;
 mod util;
 
 use commands::{doom::*, meta::*, role::*, song::*};
 use config::doom::DoomConfigInit;
-use util::{LavalinkKey, RateLimiterInit};
+use util::LavalinkKey;
 
 struct Handler;
 struct LavalinkHandler;
@@ -116,7 +115,6 @@ async fn main() {
         .event_handler(Handler)
         .register_songbird()
         .register_doom()
-        .register_ratelimiters()
         .await
         .expect("Error creating client");
 
